@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS CLOUD | 新世代企業雲端運算架構</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Google Fonts (Noto Sans TC & Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* 基礎設定與總捲動高度 450vh，確保充足的聖光過渡空間 */
+        html, body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #060913;
+            color: #f8fafc;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            min-height: 450vh;
+        }
+
+        /* 自訂極簡捲軸 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #060913;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #38bdf8;
+            border-radius: 3px;
+        }
+
+        /* 科技感網格背景 */
+        .tech-grid {
+            background-size: 44px 44px;
+            background-image: 
+                linear-gradient(to right, rgba(56, 189, 248, 0.06) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(56, 189, 248, 0.06) 1px, transparent 1px);
+        }
+
+        /* 原神啟動：聖光旋轉光環與四角星芒動畫 */
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes spin-reverse-slow {
+            from { transform: rotate(360deg); }
+            to { transform: rotate(0deg); }
+        }
+
+        @keyframes star-pulse {
+            0%, 100% { 
+                transform: scale(1); 
+                filter: drop-shadow(0 0 28px rgba(251, 191, 36, 0.85)) drop-shadow(0 0 65px rgba(255, 255, 255, 1));
+            }
+            50% { 
+                transform: scale(1.07); 
+                filter: drop-shadow(0 0 45px rgba(245, 158, 11, 0.95)) drop-shadow(0 0 95px rgba(253, 224, 71, 0.9));
+            }
+        }
+
+        @keyframes float-pillar {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes door-glow-expand {
+            0% { transform: scale(0.95); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.7; }
+        }
+
+        .animate-spin-slow {
+            animation: spin-slow 26s linear infinite;
+        }
+
+        .animate-spin-reverse-slow {
+            animation: spin-reverse-slow 34s linear infinite;
+        }
+
+        .animate-star-pulse {
+            animation: star-pulse 2.8s ease-in-out infinite;
+        }
+
+        .animate-float-pillar {
+            animation: float-pillar 4.5s ease-in-out infinite;
+        }
+
+        .animate-door-glow {
+            animation: door-glow-expand 3.5s ease-in-out infinite;
+        }
+
+        /* 呼吸向下箭頭 */
+        @keyframes bounce-subtle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(8px); }
+        }
+        .animate-bounce-subtle {
+            animation: bounce-subtle 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-sky-500 selection:text-white">
+
+    <!-- 左下角懸浮音效控制按鈕（最高層級確保隨時可點擊） -->
+    <div class="fixed bottom-5 left-5 z-[70] flex items-center gap-2">
+        <button id="audioToggleBtn" class="flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 backdrop-blur-md text-xs sm:text-sm font-medium text-slate-200 shadow-lg transition-all duration-300 cursor-pointer">
+            <span id="audioIcon" class="w-2.5 h-2.5 rounded-full bg-slate-500 transition-colors"></span>
+            <span id="audioText">♪ 頁面音效：關（點擊開啟最佳體驗）</span>
+        </button>
+    </div>
+
+    <!-- 右下角滾動進度指示器 -->
+    <div id="progressBadge" class="fixed bottom-5 right-5 z-[70] px-3.5 py-1.5 rounded-full bg-slate-900/80 border border-slate-800 backdrop-blur-md text-xs font-mono text-slate-400 pointer-events-none transition-opacity duration-300">
+        探索深度: <span id="scrollPercentText" class="text-sky-400 font-bold">0%</span>
+    </div>
+
+    <!-- ==========================================
+         第一階段：高質感正常企業官網 (0% ~ 68% 隨下滑越來越亮)
+         ========================================== -->
+    <div id="mainContentWrapper" class="relative z-10 min-h-[450vh] flex flex-col justify-between transition-[filter] duration-75">
+        
+        <!-- 頂部導覽列 -->
+        <header id="navbar" class="fixed top-0 left-0 right-0 z-30 border-b border-slate-800/70 bg-[#060913]/85 backdrop-blur-md transition-colors duration-300">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-400 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <span class="font-bold text-lg tracking-wider text-white">NEXUS <span class="text-sky-400 font-normal">CLOUD</span></span>
+                </div>
+                
+                <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+                    <a href="#tech" class="hover:text-sky-400 transition-colors">核心技術</a>
+                    <a href="#features" class="hover:text-sky-400 transition-colors">產品優勢</a>
+                    <a href="#light-Ascension" class="hover:text-sky-400 transition-colors">光能架構</a>
+                </nav>
+
+                <button onclick="smoothScrollDown()" class="px-4 py-2 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-400 text-xs sm:text-sm font-medium transition-all cursor-pointer">
+                    立即體驗
+                </button>
+            </div>
+        </header>
+
+        <!-- Section 1: 主視覺 Hero (0% ~ 25%) -->
+        <section class="min-h-screen pt-24 pb-16 px-4 sm:px-6 flex flex-col items-center justify-center text-center relative tech-grid">
+            <div class="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[640px] h-[340px] sm:h-[640px] bg-sky-500/15 rounded-full blur-[120px] pointer-events-none"></div>
+
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/90 border border-slate-700/80 text-sky-400 text-xs font-medium mb-6 shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                NEXUS Engine v5.0 全球量子雲端正式上線
+            </div>
+
+            <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-4xl leading-tight mb-6">
+                重新定義您的<span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-400">雲端數位體驗</span>
+            </h1>
+
+            <p class="text-base sm:text-xl text-slate-400 max-w-2xl leading-relaxed mb-10 font-light">
+                極致純粹、零延遲、全光速串聯的下一代雲端運算平台。為追求卓越的創新團隊打造光輝璀璨的數位未來。
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center gap-4">
+                <button onclick="smoothScrollDown()" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-semibold shadow-lg shadow-sky-500/25 transition-all transform hover:-translate-y-0.5 cursor-pointer">
+                    探索光速架構
+                </button>
+                <button onclick="smoothScrollDown()" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700 text-slate-300 font-medium transition-all cursor-pointer">
+                    查看架構規格
+                </button>
+            </div>
+
+            <!-- 向下滑動提示 -->
+            <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-slate-400 text-xs tracking-widest uppercase animate-bounce-subtle">
+                <span>向下滑動探索完整架構</span>
+                <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                </svg>
+            </div>
+        </section>
+
+        <!-- Section 2: 企業核心數據指標 (20% ~ 45%) -->
+        <section id="tech" class="py-24 px-4 sm:px-6 max-w-7xl mx-auto w-full relative">
+            <div class="text-center mb-16">
+                <span class="text-sky-400 text-xs font-bold tracking-widest uppercase block mb-2">GLOBAL INFRASTRUCTURE</span>
+                <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">企業級核心效能指標</h2>
+                <p class="text-slate-400 text-sm sm:text-base max-w-xl mx-auto">透過遍布全球的邊緣光纖運算節點，為每一次連結注入純淨而強大的能量。</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <div class="p-8 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-sm hover:border-sky-500/50 transition-all">
+                    <div class="text-sky-400 text-sm font-semibold mb-2">系統可用性 SLA</div>
+                    <div class="text-4xl font-extrabold text-white mb-3">99.999%</div>
+                    <p class="text-slate-400 text-sm leading-relaxed">多重星狀備援架構與智能負載平衡，全天候守護您的每一項核心任務。</p>
+                </div>
+
+                <div class="p-8 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-sm hover:border-sky-500/50 transition-all">
+                    <div class="text-indigo-400 text-sm font-semibold mb-2">光速低延遲節點</div>
+                    <div class="text-4xl font-extrabold text-white mb-3">&lt; 8 ms</div>
+                    <p class="text-slate-400 text-sm leading-relaxed">部署超過 320 個全光學加速中心，實現跨大陸無縫即時同步。</p>
+                </div>
+
+                <div class="p-8 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-sm hover:border-sky-500/50 transition-all">
+                    <div class="text-amber-300 text-sm font-semibold mb-2">純淨光能運算引擎</div>
+                    <div class="text-4xl font-extrabold text-white mb-3">100% 綠能</div>
+                    <p class="text-slate-400 text-sm leading-relaxed">隨著負載提升釋放耀眼算力光芒，開啟通往全新世界的大門。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: 聖光漸強過渡帶 (40% ~ 75%) -->
+        <section id="features" class="min-h-[150vh] py-24 px-4 sm:px-6 max-w-5xl mx-auto w-full flex flex-col items-center justify-center text-center relative">
+            <div class="p-10 sm:p-14 rounded-3xl bg-slate-900/60 border border-sky-400/20 backdrop-blur-md shadow-2xl max-w-3xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-400/30 text-sky-300 text-xs font-medium mb-5">
+                    ✦ 光子渲染核心已就緒
+                </div>
+                <h3 class="text-2xl sm:text-4xl font-bold text-white mb-5 leading-snug">
+                    感受前所未有的純淨光芒
+                </h3>
+                <p class="text-slate-300 text-base sm:text-lg leading-relaxed mb-8">
+                    當所有數據匯聚於同一道光束之中，螢幕的界線將徹底消融。繼續向下滑動，迎接嶄新世界的開啟⋯⋯
+                </p>
+                <div class="flex justify-center gap-3 text-xs font-mono text-sky-300/80">
+                    <span class="px-3 py-1.5 rounded-lg bg-slate-950/60 border border-slate-800">LUMINANCE: RISING</span>
+                    <span class="px-3 py-1.5 rounded-lg bg-slate-950/60 border border-slate-800">PORTAL: CHARGING</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: 終點緩衝區，確保滑到底部穩穩停在純白高潮 (75% ~ 100%) -->
+        <section id="light-Ascension" class="h-[100vh] flex flex-col items-center justify-center text-center px-4">
+            <p class="text-sky-200/80 text-sm tracking-[0.3em] uppercase animate-pulse">
+                ✦ 正在開啟傳送之門 ✦
+            </p>
+        </section>
+    </div>
+
+    <!-- ==========================================
+         第二階段：聖光白光遮罩層 (z-index: 50)
+         ========================================== -->
+    <div id="whiteout-overlay" class="fixed inset-0 bg-white pointer-events-none z-50 opacity-0 transition-opacity duration-75">
+        <!-- 聖光飄浮粒子 Canvas -->
+        <canvas id="lightParticlesCanvas" class="w-full h-full block"></canvas>
+    </div>
+
+    <!-- ==========================================
+         第三階段：原神影片 / 啟動舞台層 (z-index: 60)
+         ========================================== -->
+    <div id="genshin-stage" class="fixed inset-0 z-[60] pointer-events-none opacity-0 flex flex-col items-center justify-center bg-white transition-opacity duration-300 overflow-hidden">
+        
+        <!-- 1. 優先顯示上傳的原始影片（相容 1229896323-1-192.mp4 與 video_1.mp4） -->
+        <div id="videoStageWrapper" class="relative w-full h-full flex items-center justify-center bg-white">
+            <video id="genshin-video" 
+                   playsinline 
+                   preload="auto"
+                   class="w-full h-full max-w-6xl max-h-screen object-contain select-none bg-white">
+                <source src="1229896323-1-192.mp4" type="video/mp4">
+                <source src="video_1.mp4" type="video/mp4">
+            </video>
+
+            <!-- 若瀏覽器擋住有聲自動播放，顯示醒目的金色光暈「點擊開啟原聲」按鈕 -->
+            <button id="unmuteVideoBtn" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 flex items-center gap-3 px-8 py-4 rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-white font-bold text-base sm:text-xl shadow-[0_0_50px_rgba(245,158,11,0.8)] animate-bounce cursor-pointer border-2 border-white">
+                <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                </svg>
+                <span>點擊開啟原聲（原神，啟動！）</span>
+            </button>
+        </div>
+
+        <!-- 2. 高還原度內建《原神，啟動！》動態視覺舞台（當環境無法讀取本地 mp4 時無縫接管，絕不黑屏！） -->
+        <div id="fallbackGenshinStage" class="hidden absolute inset-0 flex-col items-center justify-between py-10 px-4 text-center bg-gradient-to-b from-white via-[#fffdf8] to-[#f4f8ff] overflow-hidden">
+            
+            <!-- 背景天空島雲海與白玉石柱剪影 (呼應影片 00:21 經典開門畫面) -->
+            <div id="celestiaSkyBackdrop" class="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-1000">
+                <!-- 藍天漸層 -->
+                <div class="absolute inset-0 bg-gradient-to-b from-[#3b82f6] via-[#93c5fd] to-[#ffffff]"></div>
+                <!-- 聖光太陽 -->
+                <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-white/80 blur-[70px] animate-door-glow"></div>
+                <!-- 天空島白玉石柱群 SVG -->
+                <svg class="absolute bottom-0 left-0 right-0 w-full h-[65vh] object-cover" viewBox="0 0 1440 600" preserveAspectRatio="xMidYMax slice">
+                    <defs>
+                        <linearGradient id="pillarGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#f8fafc" />
+                            <stop offset="100%" stop-color="#cbd5e1" />
+                        </linearGradient>
+                        <linearGradient id="bridgeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#fef3c7" />
+                            <stop offset="100%" stop-color="#e2e8f0" />
+                        </linearGradient>
+                    </defs>
+                    <!-- 遠景浮空石柱 -->
+                    <g opacity="0.55" class="animate-float-pillar">
+                        <rect x="180" y="140" width="28" height="260" fill="url(#pillarGrad)" />
+                        <rect x="172" y="132" width="44" height="12" fill="#ffffff" />
+                        <rect x="340" y="180" width="22" height="220" fill="url(#pillarGrad)" />
+                        <rect x="1080" y="150" width="26" height="250" fill="url(#pillarGrad)" />
+                        <rect x="1072" y="142" width="42" height="12" fill="#ffffff" />
+                        <rect x="1220" y="190" width="24" height="210" fill="url(#pillarGrad)" />
+                    </g>
+                    <!-- 中景主神殿石柱 -->
+                    <g opacity="0.85">
+                        <rect x="460" y="90" width="38" height="360" fill="url(#pillarGrad)" />
+                        <rect x="450" y="80" width="58" height="16" fill="#ffffff" />
+                        <rect x="942" y="90" width="38" height="360" fill="url(#pillarGrad)" />
+                        <rect x="932" y="80" width="58" height="16" fill="#ffffff" />
+                    </g>
+                    <!-- 中央通往大門的光之石橋 -->
+                    <polygon points="660,310 780,310 890,600 550,600" fill="url(#bridgeGrad)" />
+                    <!-- 雲海遮罩 -->
+                    <ellipse cx="250" cy="520" rx="380" ry="110" fill="#ffffff" opacity="0.92" />
+                    <ellipse cx="720" cy="550" rx="460" ry="120" fill="#ffffff" opacity="0.95" />
+                    <ellipse cx="1180" cy="510" rx="390" ry="110" fill="#ffffff" opacity="0.92" />
+                </svg>
+            </div>
+
+            <!-- 頂部留白平衡 -->
+            <div class="h-4"></div>
+
+            <!-- 中央 Logo 與四角星芒動畫（呼應影片 00:13 ~ 00:19） -->
+            <div id="genshinLogoCenter" class="relative z-10 flex flex-col items-center justify-center my-auto transition-all duration-1000">
+                <!-- 柔和金色聖光光暈 -->
+                <div class="absolute w-[320px] sm:w-[520px] h-[320px] sm:h-[520px] rounded-full bg-amber-200/35 blur-[75px] pointer-events-none"></div>
+
+                <!-- 雙層元素星環 + 原神經典四角星芒 -->
+                <div class="relative w-52 h-52 sm:w-64 sm:h-64 flex items-center justify-center mb-4">
+                    <svg class="absolute inset-0 w-full h-full animate-spin-slow text-amber-400/60" viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="92" fill="none" stroke="currentColor" stroke-width="0.9" stroke-dasharray="4 4" />
+                        <circle cx="100" cy="100" r="82" fill="none" stroke="currentColor" stroke-width="1.3" />
+                    </svg>
+                    <svg class="absolute inset-4 w-[calc(100%-2rem)] h-[calc(100%-2rem)] animate-spin-reverse-slow text-amber-500/40" viewBox="0 0 200 200">
+                        <polygon points="100,12 188,100 100,188 12,100" fill="none" stroke="currentColor" stroke-width="1" />
+                    </svg>
+                    <!-- 經典四角原石星芒 -->
+                    <svg class="w-32 h-32 sm:w-40 sm:h-40 animate-star-pulse relative z-10" viewBox="0 0 200 200">
+                        <defs>
+                            <linearGradient id="primogemGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#ffffff" />
+                                <stop offset="45%" stop-color="#fef3c7" />
+                                <stop offset="100%" stop-color="#f59e0b" />
+                            </linearGradient>
+                        </defs>
+                        <path d="M100 6 C104 68, 132 96, 194 100 C132 104, 104 132, 100 194 C96 132, 68 104, 6 100 C68 96, 96 68, 100 6 Z" fill="url(#primogemGrad)" stroke="#f59e0b" stroke-width="1.8" />
+                        <polygon points="100,72 128,100 100,128 72,100" fill="#ffffff" stroke="#fbbf24" stroke-width="1.5" />
+                    </svg>
+                </div>
+
+                <!-- 經典黑白灰「原神」標題字樣 -->
+                <h2 class="text-5xl sm:text-7xl font-black tracking-[0.2em] text-slate-800 drop-shadow-sm mb-2 select-none">
+                    原<span class="text-slate-900">神</span>
+                </h2>
+                <p class="text-xs sm:text-sm tracking-[0.4em] text-amber-600 font-bold uppercase mb-5">
+                    GENSHIN IMPACT // 啟動！
+                </p>
+
+                <!-- 若音訊尚未解鎖，提供一鍵開啟經典空靈旋律按鈕 -->
+                <button id="fallbackUnmuteBtn" class="hidden px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold shadow-lg shadow-amber-500/30 animate-bounce cursor-pointer">
+                    ♪ 點擊開啟《原神》經典開門音樂
+                </button>
+            </div>
+
+            <!-- 底部：防沉迷健康遊戲忠告排版（完美還原影片細節） -->
+            <div class="relative z-10 max-w-2xl mx-auto text-[10px] sm:text-xs text-slate-500 leading-relaxed pb-10 sm:pb-4 select-none">
+                <p class="font-medium text-slate-600">抵制不良遊戲，拒絕盜版遊戲。注意自我保護，謹防受騙上當。適度遊戲益腦，沉迷遊戲傷身。合理安排時間，享受健康生活。</p>
+                <p class="mt-0.5 text-slate-400">審批文號：國新出審[2019]2978號 &nbsp;|&nbsp; 著作權人：上海米哈遊天命科技有限公司</p>
+            </div>
+        </div>
+
+        <!-- 底部控制工具列：可隨時重播啟動或回到頂部 -->
+        <div class="fixed bottom-5 right-5 z-[75] flex items-center gap-2.5">
+            <button id="replayVideoBtn" class="px-4 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-xs sm:text-sm font-bold shadow-lg shadow-amber-500/30 transition-all cursor-pointer flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                <span>重播啟動</span>
+            </button>
+            <button id="resetScrollBtn" class="px-4 py-2.5 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-white text-xs sm:text-sm font-semibold shadow-lg transition-all cursor-pointer">
+                回到頂部
+            </button>
+        </div>
+    </div>
+
+    <!-- 自訂提示訊息框 -->
+    <div id="customToast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[80] px-6 py-3 rounded-full bg-slate-900/95 text-white text-sm font-medium shadow-2xl border border-amber-400/50 opacity-0 pointer-events-none transition-all duration-300 transform -translate-y-4">
+        ✨ 原神，啟動！正在前往提瓦特大陸...
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. 初始化 DOM 元素與狀態變數
+        // ==========================================
+        const mainContentWrapper = document.getElementById('mainContentWrapper');
+        const whiteoutOverlay = document.getElementById('whiteout-overlay');
+        const genshinStage = document.getElementById('genshin-stage');
+        const scrollPercentText = document.getElementById('scrollPercentText');
+        const progressBadge = document.getElementById('progressBadge');
+
+        const genshinVideo = document.getElementById('genshin-video');
+        const unmuteVideoBtn = document.getElementById('unmuteVideoBtn');
+        const videoStageWrapper = document.getElementById('videoStageWrapper');
+        const fallbackGenshinStage = document.getElementById('fallbackGenshinStage');
+        const celestiaSkyBackdrop = document.getElementById('celestiaSkyBackdrop');
+        const fallbackUnmuteBtn = document.getElementById('fallbackUnmuteBtn');
+        const replayVideoBtn = document.getElementById('replayVideoBtn');
+
+        const audioToggleBtn = document.getElementById('audioToggleBtn');
+        const audioIcon = document.getElementById('audioIcon');
+        const audioText = document.getElementById('audioText');
+
+        let useFallbackStage = false;
+        let hasTriggeredGenshinLaunch = false;
+        let skyTransitionTimer = null;
+
+        // 切換至內建高還原度《原神，啟動！》動態舞台（保證絕不黑屏）
+        function activateFallbackStage() {
+            if (useFallbackStage) return;
+            useFallbackStage = true;
+            videoStageWrapper.classList.add('hidden');
+            fallbackGenshinStage.classList.remove('hidden');
+            fallbackGenshinStage.classList.add('flex');
+        }
+
+        // 監聽影片來源錯誤（包含 <source> 載入失敗）
+        genshinVideo.addEventListener('error', activateFallbackStage, true);
+        const videoSources = genshinVideo.querySelectorAll('source');
+        let failedSourcesCount = 0;
+        videoSources.forEach(src => {
+            src.addEventListener('error', () => {
+                failedSourcesCount++;
+                if (failedSourcesCount >= videoSources.length) {
+                    activateFallbackStage();
+                }
+            });
+        });
+
+        // ==========================================
+        // 2. 聖光飄浮粒子效果 (讓越來越亮的過程更有層次感)
+        // ==========================================
+        const particlesCanvas = document.getElementById('lightParticlesCanvas');
+        const pCtx = particlesCanvas.getContext('2d');
+        let particles = [];
+        let currentWhiteoutOpacity = 0;
+
+        function resizeParticlesCanvas() {
+            particlesCanvas.width = window.innerWidth;
+            particlesCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeParticlesCanvas);
+        resizeParticlesCanvas();
+
+        for (let i = 0; i < 45; i++) {
+            particles.push({
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                r: 1.5 + Math.random() * 4,
+                speedY: -0.4 - Math.random() * 1.2,
+                alpha: 0.3 + Math.random() * 0.7
+            });
+        }
+
+        function animateParticles() {
+            pCtx.clearRect(0, 0, particlesCanvas.width, particlesCanvas.height);
+            if (currentWhiteoutOpacity > 0.05) {
+                particles.forEach(p => {
+                    p.y += p.speedY;
+                    if (p.y < -10) {
+                        p.y = particlesCanvas.height + 10;
+                        p.x = Math.random() * particlesCanvas.width;
+                    }
+                    pCtx.beginPath();
+                    pCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    pCtx.fillStyle = `rgba(253, 224, 71, ${p.alpha * currentWhiteoutOpacity})`;
+                    pCtx.fill();
+                });
+            }
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // ==========================================
+        // 3. Web Audio API 經典《原神》開門空靈音樂合成器
+        //    (前奏空靈旋律 + 風聲 + 聖光和弦，無需外部音檔)
+        // ==========================================
+        let audioCtx = null;
+        let isAudioEnabled = false;
+        let isPlayingSynthBGM = false;
+        let synthTimers = [];
+
+        function initAudioContext() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function stopSynthGenshinBGM() {
+            isPlayingSynthBGM = false;
+            synthTimers.forEach(id => clearTimeout(id));
+            synthTimers = [];
+        }
+
+        // 演奏《原神》登錄界面經典空靈鋼琴/弦樂主題旋律
+        function playSynthGenshinBGM() {
+            initAudioContext();
+            if (audioCtx.state === 'suspended') {
+                fallbackUnmuteBtn.classList.remove('hidden');
+                return;
+            }
+            fallbackUnmuteBtn.classList.add('hidden');
+            stopSynthGenshinBGM();
+            isPlayingSynthBGM = true;
+
+            const now = audioCtx.currentTime;
+
+            // 1. 柔和空靈風聲底噪 (Wind Pad)
+            const bufferSize = audioCtx.sampleRate * 8;
+            const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+            const whiteNoise = audioCtx.createBufferSource();
+            whiteNoise.buffer = noiseBuffer;
+            whiteNoise.loop = true;
+
+            const windFilter = audioCtx.createBiquadFilter();
+            windFilter.type = 'bandpass';
+            windFilter.frequency.setValueAtTime(420, now);
+            windFilter.Q.setValueAtTime(3.5, now);
+
+            const windGain = audioCtx.createGain();
+            windGain.gain.setValueAtTime(0.001, now);
+            windGain.gain.linearRampToValueAtTime(0.035, now + 1.5);
+            windGain.gain.exponentialRampToValueAtTime(0.001, now + 14);
+
+            whiteNoise.connect(windFilter);
+            windFilter.connect(windGain);
+            windGain.connect(audioCtx.destination);
+            whiteNoise.start(now);
+            whiteNoise.stop(now + 14.5);
+
+            // 2. 經典《原神》登錄主題旋律音符序列 (時間秒數, 頻率Hz, 持續秒數, 音量)
+            const melodyNotes = [
+                // 開場標誌性四音動機 + 延展旋律
+                [0.0,  587.33, 1.4, 0.14], // D5
+                [0.55, 659.25, 1.4, 0.14], // E5
+                [1.1,  880.00, 1.8, 0.16], // A5
+                [1.75, 783.99, 2.2, 0.15], // G5
+                
+                [2.8,  659.25, 1.3, 0.13], // E5
+                [3.35, 587.33, 1.3, 0.13], // D5
+                [3.9,  493.88, 1.6, 0.14], // B4
+                [4.55, 587.33, 2.4, 0.15], // D5
+
+                // 高潮「原神，啟動！」輝煌和弦鋪陳
+                [5.8,  587.33, 1.2, 0.14], // D5
+                [6.3,  783.99, 1.2, 0.15], // G5
+                [6.8,  880.00, 1.5, 0.17], // A5
+                [7.4,  1174.66, 3.2, 0.18], // D6 (聖光爆發最高音)
+                [8.2,  1046.50, 2.5, 0.15], // C6
+                [9.0,  880.00,  2.8, 0.15], // A5
+                [10.0, 783.99,  3.5, 0.14]  // G5
+            ];
+
+            // 溫暖弦樂和弦墊音 (Pad Chords)
+            const padChords = [
+                { time: 0.0, freqs: [146.83, 220.00, 293.66, 440.00], dur: 5.5 }, // Dsus2
+                { time: 5.5, freqs: [196.00, 246.94, 293.66, 392.00], dur: 4.5 }, // G major
+                { time: 7.4, freqs: [146.83, 220.00, 369.99, 587.33], dur: 6.5 }  // D major (開門輝煌和弦)
+            ];
+
+            padChords.forEach(chord => {
+                chord.freqs.forEach(freq => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + chord.time);
+
+                    gain.gain.setValueAtTime(0.0001, now + chord.time);
+                    gain.gain.linearRampToValueAtTime(0.045, now + chord.time + 0.8);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + chord.time + chord.dur);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + chord.time);
+                    osc.stop(now + chord.time + chord.dur + 0.1);
+                });
+            });
+
+            melodyNotes.forEach(([t, freq, dur, vol]) => {
+                const osc = audioCtx.createOscillator();
+                const overtone = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now + t);
+
+                overtone.type = 'triangle';
+                overtone.frequency.setValueAtTime(freq * 2, now + t);
+
+                const overtoneGain = audioCtx.createGain();
+                overtoneGain.gain.setValueAtTime(0.15, now + t);
+
+                gain.gain.setValueAtTime(0.0001, now + t);
+                gain.gain.linearRampToValueAtTime(vol, now + t + 0.06);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + t + dur);
+
+                osc.connect(gain);
+                overtone.connect(overtoneGain);
+                overtoneGain.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now + t);
+                overtone.start(now + t);
+                osc.stop(now + t + dur + 0.1);
+                overtone.stop(now + t + dur + 0.1);
+            });
+        }
+
+        // 左下角音效按鈕控制
+        audioToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            isAudioEnabled = !isAudioEnabled;
+            if (isAudioEnabled) {
+                initAudioContext();
+                if (!useFallbackStage) {
+                    genshinVideo.muted = false;
+                    genshinVideo.volume = 1.0;
+                    if (hasTriggeredGenshinLaunch) {
+                        genshinVideo.play().catch(() => {});
+                        unmuteVideoBtn.classList.add('hidden');
+                    }
+                } else if (hasTriggeredGenshinLaunch) {
+                    playSynthGenshinBGM();
+                }
+                audioIcon.classList.remove('bg-slate-500');
+                audioIcon.classList.add('bg-emerald-400', 'animate-pulse');
+                audioText.textContent = '♪ 頁面音效：開（已解鎖原聲）';
+            } else {
+                genshinVideo.muted = true;
+                stopSynthGenshinBGM();
+                audioIcon.classList.remove('bg-emerald-400', 'animate-pulse');
+                audioIcon.classList.add('bg-slate-500');
+                audioText.textContent = '♪ 頁面音效：關';
+            }
+        });
+
+        // 首次在頁面上任何地方互動（點擊或觸控）自動解鎖瀏覽器音訊權限
+        function unlockBrowserAudioOnFirstGesture() {
+            initAudioContext();
+            if (!isAudioEnabled) {
+                isAudioEnabled = true;
+                audioIcon.classList.remove('bg-slate-500');
+                audioIcon.classList.add('bg-emerald-400', 'animate-pulse');
+                audioText.textContent = '♪ 頁面音效：開（已解鎖原聲）';
+            }
+            if (hasTriggeredGenshinLaunch) {
+                if (!useFallbackStage && genshinVideo.muted) {
+                    genshinVideo.muted = false;
+                    genshinVideo.volume = 1.0;
+                    genshinVideo.play().catch(() => {});
+                    unmuteVideoBtn.classList.add('hidden');
+                } else if (useFallbackStage && !isPlayingSynthBGM) {
+                    playSynthGenshinBGM();
+                }
+            }
+        }
+        document.addEventListener('pointerdown', unlockBrowserAudioOnFirstGesture, { once: true });
+
+        // ==========================================
+        // 4. 觸發與重置《原神，啟動！》舞台邏輯
+        // ==========================================
+        function triggerGenshinLaunch() {
+            if (hasTriggeredGenshinLaunch) return;
+            hasTriggeredGenshinLaunch = true;
+
+            // 檢查影片是否真的有有效來源，若無則立即切換至內建舞台
+            if (!useFallbackStage && genshinVideo.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+                activateFallbackStage();
+            }
+
+            if (useFallbackStage) {
+                // 啟動內建《原神，啟動！》舞台與經典空靈音樂
+                celestiaSkyBackdrop.style.opacity = '0';
+                playSynthGenshinBGM();
+                // 7.4 秒時配合高潮和弦展開天空島雲海與白玉石柱大門畫面！
+                clearTimeout(skyTransitionTimer);
+                skyTransitionTimer = setTimeout(() => {
+                    celestiaSkyBackdrop.style.opacity = '1';
+                }, 7200);
+                return;
+            }
+
+            // 嘗試播放上傳的 mp4 影片
+            genshinVideo.currentTime = 0;
+            genshinVideo.muted = false;
+            genshinVideo.volume = 1.0;
+
+            const playPromise = genshinVideo.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    unmuteVideoBtn.classList.add('hidden');
+                }).catch(() => {
+                    // 若瀏覽器仍攔截有聲自動播放，先靜音播放畫面並顯示醒目「點擊開啟原聲」按鈕
+                    genshinVideo.muted = true;
+                    genshinVideo.play().then(() => {
+                        unmuteVideoBtn.classList.remove('hidden');
+                    }).catch(() => {
+                        // 若影片在預覽環境仍無法播放，無縫降級至內建動態舞台
+                        activateFallbackStage();
+                        playSynthGenshinBGM();
+                    });
+                });
+            }
+        }
+
+        function resetGenshinLaunch() {
+            if (!hasTriggeredGenshinLaunch) return;
+            hasTriggeredGenshinLaunch = false;
+            clearTimeout(skyTransitionTimer);
+            celestiaSkyBackdrop.style.opacity = '0';
+            stopSynthGenshinBGM();
+
+            if (!useFallbackStage) {
+                genshinVideo.pause();
+                genshinVideo.currentTime = 0;
+                unmuteVideoBtn.classList.add('hidden');
+            }
+        }
+
+        // 點擊影片解鎖原聲按鈕
+        unmuteVideoBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            genshinVideo.muted = false;
+            genshinVideo.volume = 1.0;
+            genshinVideo.currentTime = 0;
+            genshinVideo.play();
+            unmuteVideoBtn.classList.add('hidden');
+            isAudioEnabled = true;
+            audioIcon.classList.remove('bg-slate-500');
+            audioIcon.classList.add('bg-emerald-400', 'animate-pulse');
+            audioText.textContent = '♪ 頁面音效：開（已解鎖原聲）';
+        });
+
+        // 點擊備援舞台解鎖音效按鈕
+        fallbackUnmuteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            initAudioContext();
+            isAudioEnabled = true;
+            audioIcon.classList.remove('bg-slate-500');
+            audioIcon.classList.add('bg-emerald-400', 'animate-pulse');
+            audioText.textContent = '♪ 頁面音效：開（已解鎖原聲）';
+            playSynthGenshinBGM();
+        });
+
+        // 重播啟動按鈕
+        replayVideoBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!useFallbackStage) {
+                genshinVideo.muted = false;
+                genshinVideo.currentTime = 0;
+                genshinVideo.play();
+                unmuteVideoBtn.classList.add('hidden');
+            } else {
+                celestiaSkyBackdrop.style.opacity = '0';
+                playSynthGenshinBGM();
+                clearTimeout(skyTransitionTimer);
+                skyTransitionTimer = setTimeout(() => {
+                    celestiaSkyBackdrop.style.opacity = '1';
+                }, 7200);
+            }
+        });
+
+        // ==========================================
+        // 5. 多重捲動偵測機制 (確保 iframe / 各種瀏覽器絕不漏接)
+        // ==========================================
+        let lastKnownScrollY = -1;
+
+        function getScrollProgress() {
+            const scrollTop = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+            const scrollHeight = Math.max(
+                document.body.scrollHeight,
+                document.documentElement.scrollHeight
+            );
+            const clientHeight = window.innerHeight || document.documentElement.clientHeight;
+            const maxScroll = Math.max(scrollHeight - clientHeight, 1);
+            return Math.min(Math.max(scrollTop / maxScroll, 0), 1);
+        }
+
+        function updateScrollEffects() {
+            const progress = getScrollProgress();
+            scrollPercentText.textContent = `${Math.round(progress * 100)}%`;
+
+            // ------------------------------------------
+            // 階段一 & 二：30% ~ 68% 聖光漸強、越來越亮
+            // ------------------------------------------
+            if (progress >= 0.30) {
+                const lightProgress = Math.min(Math.max((progress - 0.30) / 0.38, 0), 1);
+                // 使用平滑緩動讓白光越往後越刺眼
+                const easedLight = Math.pow(lightProgress, 1.35);
+                currentWhiteoutOpacity = easedLight;
+
+                whiteoutOverlay.style.opacity = easedLight.toFixed(3);
+                mainContentWrapper.style.filter = `brightness(${(1 + easedLight * 4.5).toFixed(2)})`;
+            } else {
+                currentWhiteoutOpacity = 0;
+                whiteoutOverlay.style.opacity = '0';
+                mainContentWrapper.style.filter = 'brightness(1)';
+            }
+
+            // ------------------------------------------
+            // 階段三：68% ~ 100% 無縫連接《原神，啟動！》音樂與畫面
+            // ------------------------------------------
+            if (progress >= 0.68) {
+                const stageProgress = Math.min(Math.max((progress - 0.68) / 0.12, 0), 1);
+                genshinStage.style.opacity = stageProgress.toFixed(3);
+
+                if (stageProgress > 0.25) {
+                    genshinStage.style.pointerEvents = 'auto';
+                    progressBadge.style.opacity = '0';
+                    // 切換左下角音效按鈕為純白亮色系
+                    audioToggleBtn.classList.remove('bg-slate-900/90', 'text-slate-200', 'border-slate-700/80');
+                    audioToggleBtn.classList.add('bg-white/95', 'text-slate-700', 'border-amber-300');
+                }
+
+                // 到達 68% 聖光全白瞬間，自動啟動影片與經典音樂！
+                triggerGenshinLaunch();
+            } else {
+                genshinStage.style.opacity = '0';
+                genshinStage.style.pointerEvents = 'none';
+                progressBadge.style.opacity = '1';
+                // 恢復暗色系按鈕
+                audioToggleBtn.classList.add('bg-slate-900/90', 'text-slate-200', 'border-slate-700/80');
+                audioToggleBtn.classList.remove('bg-white/95', 'text-slate-700', 'border-amber-300');
+
+                // 若往上滑回 62% 以上，重置啟動狀態方便再次體驗
+                if (progress < 0.62) {
+                    resetGenshinLaunch();
+                }
+            }
+        }
+
+        // 同時監聽 window、document 捲動以及 requestAnimationFrame 輪詢（徹底解決 iframe 預覽捲動失靈）
+        window.addEventListener('scroll', updateScrollEffects, { passive: true });
+        document.addEventListener('scroll', updateScrollEffects, { passive: true });
+
+        function pollScrollLoop() {
+            const currentY = window.scrollY || document.documentElement.scrollTop || 0;
+            if (currentY !== lastKnownScrollY) {
+                lastKnownScrollY = currentY;
+                updateScrollEffects();
+            }
+            requestAnimationFrame(pollScrollLoop);
+        }
+        requestAnimationFrame(pollScrollLoop);
+
+        // ==========================================
+        // 6. 輔助按鈕與互動提示
+        // ==========================================
+        window.smoothScrollDown = function() {
+            window.scrollBy({
+                top: window.innerHeight * 0.9,
+                behavior: 'smooth'
+            });
+        };
+
+        document.getElementById('resetScrollBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        const customToast = document.getElementById('customToast');
+        let toastTimeout = null;
+
+        genshinStage.addEventListener('click', () => {
+            if (!useFallbackStage && genshinVideo.muted) {
+                genshinVideo.muted = false;
+                genshinVideo.volume = 1.0;
+                genshinVideo.play().catch(() => {});
+                unmuteVideoBtn.classList.add('hidden');
+            } else if (useFallbackStage && !isPlayingSynthBGM) {
+                playSynthGenshinBGM();
+            }
+
+            customToast.classList.remove('opacity-0', '-translate-y-4');
+            customToast.classList.add('opacity-100', 'translate-y-0');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                customToast.classList.remove('opacity-100', 'translate-y-0');
+                customToast.classList.add('opacity-0', '-translate-y-4');
+            }, 2500);
+        });
+
+        // 頁面載入完成後立即同步一次狀態
+        updateScrollEffects();
+    </script>
+</body>
+</html>
